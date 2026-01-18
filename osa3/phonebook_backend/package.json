@@ -8,7 +8,8 @@
     "dev": "node --watch index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:ui": "rm -rf dist && cd ../../osa2/phonebook && npm run build && cp -r dist ../../osa3/phonebook_backend",
-    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push"
+    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push",
+    "lint": "eslint ."
   },
   "author": "Camilla Koskela",
   "license": "MIT",
@@ -17,5 +18,11 @@
     "express": "^5.1.0",
     "mongoose": "^8.18.0",
     "morgan": "^1.10.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.34.0",
+    "@stylistic/eslint-plugin": "^5.7.0",
+    "eslint": "^9.39.2",
+    "globals": "^17.0.0"
   }
 }

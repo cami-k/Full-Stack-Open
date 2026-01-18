@@ -9,7 +9,7 @@ app.use(express.static('dist'))
 app.use(express.json())
 
 morgan.token('body', function getBody (req) {
-    return JSON.stringify(req.body)
+  return JSON.stringify(req.body)
 })
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
@@ -38,7 +38,7 @@ app.get('/info', (request, response) => {
 })
 
 app.get('/api/persons/:id', (request, response, next) => {
-  
+
   Entry.findById(request.params.id)
     .then(entry => {
       if (entry) {
@@ -53,8 +53,8 @@ app.get('/api/persons/:id', (request, response, next) => {
 app.delete('/api/persons/:id', (request, response, next) => {
 
   Entry.findByIdAndDelete(request.params.id)
-    .then(result => {
-        response.status(204).end()
+    .then(() => {
+      response.status(204).end()
     })
     .catch(error => next(error))
 })
@@ -63,14 +63,14 @@ app.post('/api/persons', (request, response, next) => {
   const body = request.body
 
   if (!body.name || !body.number) {
-    return response.status(400).json({ 
-      error: 'name or number is missing' 
+    return response.status(400).json({
+      error: 'name or number is missing'
     })
   }
 
   /*if (numbers.map(entry => entry.name).includes(body.name)) {
-    return response.status(400).json({ 
-      error: 'name must be unique' 
+    return response.status(400).json({
+      error: 'name must be unique'
     })
   }*/
 
@@ -81,7 +81,7 @@ app.post('/api/persons', (request, response, next) => {
 
   entry.save()
     .then(savedEntry => {
-        response.json(savedEntry)
+      response.json(savedEntry)
     })
     .catch(error => next(error))
 
@@ -112,7 +112,7 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
-  } else if (error.name === 'ValidationError') {    
+  } else if (error.name === 'ValidationError') {
     return response.status(400).json({ error: error.message })
   }
 

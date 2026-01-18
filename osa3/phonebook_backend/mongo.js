@@ -6,7 +6,7 @@ if (process.argv.length < 3) {
   process.exit(1)
 }
 
-const password = process.argv[2]
+//const password = process.argv[2]
 
 const url = process.env.MONGODB_URI
 
@@ -24,13 +24,13 @@ const entrySchema = new mongoose.Schema({
 const Entry = mongoose.model('Entry', entrySchema)
 
 if (name && number) {
-  
+
   const entry = new Entry({
     name: name,
     number: number,
   })
 
-  entry.save().then(result => {
+  entry.save().then(() => {
     console.log(`Added ${name} number ${number} to phonebook`)
     mongoose.connection.close()
   })
@@ -41,7 +41,7 @@ if (name && number) {
     result.forEach(entry => {
       console.log(`${entry.name} ${entry.number}`)
     })
-  mongoose.connection.close()
+    mongoose.connection.close()
   })
 }
 

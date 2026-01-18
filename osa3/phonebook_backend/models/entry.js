@@ -7,12 +7,12 @@ mongoose.set('strictQuery', false)
 console.log('connecting to', url)
 
 mongoose.connect(url)
-  .then(result => {
+  .then(() => {
     console.log('connected to MongoDB')
   })
   .catch((error) => {
     console.log('error connecting to MongoDB:', error.message)
-})
+  })
 
 const entrySchema = new mongoose.Schema({
   name: {
@@ -23,8 +23,8 @@ const entrySchema = new mongoose.Schema({
     type: String,
     minlength: 8,
     validate: {
-        validator: function(number) {
-        return /^\d{2}-\d{5,}$/.test(number) || /^\d{3}-\d{4,}$/.test(number);
+      validator: function(number) {
+        return /^\d{2}-\d{5,}$/.test(number) || /^\d{3}-\d{4,}$/.test(number)
       },
       message: props => `${props.value} is not in the correct form.`
     }
