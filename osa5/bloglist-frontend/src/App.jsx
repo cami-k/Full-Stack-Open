@@ -1,23 +1,24 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
+import BlogForm from './components/BlogForm'
+import Togglable from './components/Togglable'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
-  const [username, setUsername] = useState('') 
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
-  const [url, setUrl] = useState('')
   const [message, setMessage] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
 
+  const blogFormRef = useRef()
+
   useEffect(() => {
     blogService.getAll().then(blogs =>
-      setBlogs( blogs )
-    )  
+      setBlogs( blogs.sort((a, b) => b.likes - a.likes) )
+    )
   }, [])
 
   useEffect(() => {
@@ -51,26 +52,37 @@ const App = () => {
     setUser(null)
   }
 
-  const createBlog = async (event) => {
-    event.preventDefault()
+  const createBlog = async (blogObject) => {
     try {
-      const blog = {
-        title: title,
-        author: author,
-        url: url
-      }
-      const returnedBlog = await blogService.create(blog)
-      setBlogs(blogs.concat(returnedBlog))
-      setTitle('')
-      setAuthor('')
-      setUrl('')
-      setMessage(`A new blog added: ${title} by ${author}`)
+      const returnedBlog = await blogService.create(blogObject)
+      returnedBlog.user = user
+      setBlogs(blogs.concat(returnedBlog).sort((a, b) => b.likes - a.likes))
+
+      setMessage(`A new blog added: ${returnedBlog.title} by ${returnedBlog.author}`)
       setTimeout(() => { setMessage(null) }, 5000)
+      blogFormRef.current.toggleVisibility()
     } catch {
       setErrorMessage('Blog title or URL missing')
       setTimeout(() => { setErrorMessage(null) }, 5000)
     }
-    
+  }
+
+  const updateBlog = async (blog) => {
+    //console.log(blog)
+    const updatedBlog = { ...blog, likes: blog.likes + 1 }
+    updatedBlog.user = blog.user.id
+    //console.log(updatedBlog)
+    const returnedBlog = await blogService.update(blog.id, updatedBlog)
+    returnedBlog.user = blog.user
+    setBlogs(blogs.map(b => (b.id !== blog.id ? b : returnedBlog)).sort((a, b) => b.likes - a.likes))
+    //console.log(returnedBlog)
+  }
+
+  const deleteBlog = async (blog) => {
+    if (window.confirm(`Delete ${blog.title} by ${blog.author}?`)) {
+      await blogService.remove(blog.id)
+      setBlogs(blogs.filter((n => blog.id !== n.id)).sort((a, b) => b.likes - a.likes))
+    }
   }
 
 
@@ -113,45 +125,20 @@ const App = () => {
       {errorMessage && ( <div className='error'>{errorMessage}</div> )}
 
       {user.name} logged in  <button onClick={handleLogout}>logout</button>
-        
-      <h2>Create New</h2>
-      <form onSubmit={createBlog}>
-          <div>
-            <label>
-              title: 
-              <input
-                type="text"
-                value={title}
-                onChange={({ target }) => setTitle(target.value)}
-              />
-            </label>
-          </div>
-          <div>
-            <label>
-              author: 
-              <input
-                type="text"
-                value={author}
-                onChange={({ target }) => setAuthor(target.value)}
-              />
-            </label>
-          </div>
-          <div>
-            <label>
-              url: 
-              <input
-                type="text"
-                value={url}
-                onChange={({ target }) => setUrl(target.value)}
-              />
-            </label>
-          </div>
-          <button type="submit">create</button>
-        </form>
 
-        {blogs.map(blog =>
-          <Blog key={blog.id} blog={blog} />
-        )}
+      <Togglable ref={blogFormRef} >
+        <BlogForm createBlog={createBlog} />
+      </Togglable>
+
+      {blogs.map(blog =>
+        <Blog
+          key={blog.id}
+          blog={blog}
+          update={() => updateBlog(blog)}
+          remove={() => deleteBlog(blog)}
+          user={user}
+        />
+      )}
     </div>
   )
 }
